@@ -3,6 +3,16 @@ NatRender is a lightweight graphics utility library for Unity Engine. Features i
 - High performance pixel buffer readbacks from the GPU on iOS and Android (including OpenGL ES3).
 - Running delegates on Unity's render thread.
 
+## Setup Instructions
+NatShare should be installed using the Unity Package Manager. In your `package.json` file, add the following dependency:
+```json
+{
+  "dependencies": {
+    "com.natsuite.natrender": "git+https://github.com/natsuite/NatRender"
+  }
+}
+```
+
 ## Pixel Buffer Readbacks
 NatRender provides lightweight primitives for performing pixel buffer readbacks from textures on the GPU. This is exposed through implementations the `IReadback` interface. Currently, NatRender provides the following implementations:
 - `GLESReadback` for Android when rendering with OpenGL ES3.
