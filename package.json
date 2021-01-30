@@ -1,0 +1,21 @@
+{
+    "name": "com.natsuite.natrender",
+    "version": "1.0.0",
+    "displayName": "NatRender",
+    "description": "High performance native graphics utilities for Unity Engine.",
+    "unity": "2019.3",
+    "keywords": [
+        "opengl-es",
+        "metal",
+        "opengl",
+        "rendering",
+        "graphics",
+        "android",
+        "ios"
+    ],
+    "author": {
+        "name": "Yusuf Olokoba",
+        "email": "yusuf@natsuite.io",
+        "url": "https://github.com/natsuite"
+    }
+}
