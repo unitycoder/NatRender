@@ -94,7 +94,7 @@ namespace NatSuite.Rendering {
         [DllImport(@"__Internal", EntryPoint = @"NRDisposeReadback")]
         private static extern void DisposeReadback (IntPtr readback);
         #else
-        private static IntPtr CreateReadback (int width, int height) => IntPtr.Zero;
+        private static IntPtr CreateReadback (int width, int height, bool multithreading) => IntPtr.Zero;
         private static void RequestReadback (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, IntPtr context) { }
         private static void DisposeReadback (IntPtr readback) { }
         #endif

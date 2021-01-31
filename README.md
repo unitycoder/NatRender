@@ -4,7 +4,7 @@ NatRender is a lightweight graphics utility library for Unity Engine. Features i
 - Running delegates on Unity's render thread.
 
 ## Setup Instructions
-NatShare should be installed using the Unity Package Manager. In your `package.json` file, add the following dependency:
+NatShare should be installed using the Unity Package Manager. In your `manifest.json` file, add the following dependency:
 ```json
 {
   "dependencies": {
