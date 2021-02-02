@@ -29,7 +29,7 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public void Readback<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged {
+        public void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged {
             var renderTexture = RenderTexture.GetTemporary(frameBuffer.width, frameBuffer.height, 0, RenderTextureFormat.Default);
             Graphics.Blit(texture, renderTexture);
             RenderTexture.active = renderTexture;
@@ -44,7 +44,7 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public unsafe void Readback (Texture texture, Action<IntPtr> handler) => Readback<byte>(texture, buffer => handler((IntPtr)NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(buffer)));
+        public unsafe void Request (Texture texture, Action<IntPtr> handler) => Request<byte>(texture, buffer => handler((IntPtr)NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(buffer)));
 
         /// <summary>
         /// Dispose the readback provider.

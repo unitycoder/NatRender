@@ -19,13 +19,13 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        void Readback<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged;
+        void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged;
 
         /// <summary>
         /// Request a readback.
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        void Readback (Texture texture, Action<IntPtr> handler);
+        void Request (Texture texture, Action<IntPtr> handler);
     }
 }

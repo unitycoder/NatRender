@@ -51,7 +51,7 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public unsafe void Readback<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged => Readback(texture, baseAddress => {
+        public unsafe void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged => Request(texture, baseAddress => {
             var nativeArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(baseAddress.ToPointer(), bufferSize / Marshal.SizeOf<T>(), Allocator.None);
             handler(nativeArray);
         });
@@ -61,7 +61,7 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public void Readback (Texture texture, Action<IntPtr> handler) {
+        public void Request (Texture texture, Action<IntPtr> handler) {
             Graphics.Blit(texture, frameBuffer);
             readback.Call(@"readback", readbackTexture.ToInt32(), ((IntPtr)GCHandle.Alloc(handler, GCHandleType.Normal)).ToInt64());
         }

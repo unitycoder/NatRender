@@ -27,7 +27,7 @@ namespace NatSuite.Rendering {
         /// <param name="height">Output pixel buffer height.</param>
         /// <param name="multithreading">Use multithreading. Setting `true` will typically increase performance.</param>
         public MTLReadback (int width, int height, bool multithreading = false) {
-            this.readback = CreateReadback(width, height, multithreading);
+            this.readback = Create(width, height, multithreading);
             this.frameBuffer = new RenderTexture(width, height, 0, RenderTextureFormat.Default);
             this.frameBuffer.Create();
             this.readbackTexture = frameBuffer.GetNativeTexturePtr();
@@ -39,7 +39,7 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public unsafe void Readback<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged => Readback(texture, baseAddress => {
+        public unsafe void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged => Request(texture, baseAddress => {
             var nativeArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(baseAddress.ToPointer(), bufferSize / Marshal.SizeOf<T>(), Allocator.None);
             handler(nativeArray);
         });
@@ -49,16 +49,16 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public void Readback (Texture texture, Action<IntPtr> handler) {
+        public void Request (Texture texture, Action<IntPtr> handler) {
             Graphics.Blit(texture, frameBuffer);
-            RequestReadback(readback, readbackTexture, OnReadback, (IntPtr)GCHandle.Alloc(handler, GCHandleType.Normal));
+            Request(readback, readbackTexture, OnReadback, (IntPtr)GCHandle.Alloc(handler, GCHandleType.Normal));
         }
 
         /// <summary>
         /// Dispose the readback provider.
         /// </summary>
         public async void Dispose () {
-            DisposeReadback(readback);
+            Dispose(readback);
             await Task.Yield();
             frameBuffer.Release();
         }
@@ -88,15 +88,15 @@ namespace NatSuite.Rendering {
 
         #if UNITY_IOS //&& !UNITY_EDITOR
         [DllImport(@"__Internal", EntryPoint = @"NRCreateReadback")]
-        private static extern IntPtr CreateReadback (int width, int height, bool multithreading);
+        private static extern IntPtr Create (int width, int height, bool multithreading);
         [DllImport(@"__Internal", EntryPoint = @"NRRequestReadback")]
-        private static extern void RequestReadback (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, IntPtr context);
+        private static extern void Request (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, IntPtr context);
         [DllImport(@"__Internal", EntryPoint = @"NRDisposeReadback")]
-        private static extern void DisposeReadback (IntPtr readback);
+        private static extern void Dispose (IntPtr readback);
         #else
-        private static IntPtr CreateReadback (int width, int height, bool multithreading) => IntPtr.Zero;
-        private static void RequestReadback (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, IntPtr context) { }
-        private static void DisposeReadback (IntPtr readback) { }
+        private static IntPtr Create (int width, int height, bool multithreading) => IntPtr.Zero;
+        private static void Request (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, IntPtr context) { }
+        private static void Dispose (IntPtr readback) { }
         #endif
         #endregion
     }
