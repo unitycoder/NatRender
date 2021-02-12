@@ -28,14 +28,14 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged => AsyncGPUReadback.Request(texture, 0, request => handler(request.GetData<T>()));
+        public void Request (Texture texture, ReadbackDelegate handler) => AsyncGPUReadback.Request(texture, 0, request => handler(request.GetData<byte>()));
 
         /// <summary>
         /// Request a readback.
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public unsafe void Request (Texture texture, Action<IntPtr> handler) => Request<byte>(texture, buffer => handler((IntPtr)NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(buffer)));
+        public unsafe void Request (Texture texture, NativeReadbackDelegate handler) => Request(texture, buffer => handler(NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(buffer)));
 
         /// <summary>
         /// Dispose the readback provider.

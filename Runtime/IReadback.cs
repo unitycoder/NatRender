@@ -19,13 +19,23 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged;
+        void Request (Texture texture, ReadbackDelegate handler);
 
         /// <summary>
         /// Request a readback.
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        void Request (Texture texture, Action<IntPtr> handler);
+        unsafe void Request (Texture texture, NativeReadbackDelegate handler);
     }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="pixelBuffer"></param>
+    public delegate void ReadbackDelegate (NativeArray<byte> pixelBuffer);
+
+    /// <summary>
+    /// </summary>
+    /// <param name="nativeBuffer"></param>
+    public unsafe delegate void NativeReadbackDelegate (void* nativeBuffer);
 }

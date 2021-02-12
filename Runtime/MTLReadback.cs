@@ -39,8 +39,8 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public unsafe void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged => Request(texture, baseAddress => {
-            var nativeArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(baseAddress.ToPointer(), bufferSize / Marshal.SizeOf<T>(), Allocator.None);
+        public unsafe void Request (Texture texture, ReadbackDelegate handler) => Request(texture, baseAddress => {
+            var nativeArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(baseAddress, bufferSize, Allocator.None);
             handler(nativeArray);
         });
 
@@ -49,9 +49,9 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public void Request (Texture texture, Action<IntPtr> handler) {
+        public unsafe void Request (Texture texture, NativeReadbackDelegate handler) {
             Graphics.Blit(texture, frameBuffer);
-            Request(readback, readbackTexture, OnReadback, (IntPtr)GCHandle.Alloc(handler, GCHandleType.Normal));
+            Request(readback, readbackTexture, OnReadback, (void*)(IntPtr)GCHandle.Alloc(handler, GCHandleType.Normal));
         }
 
         /// <summary>
@@ -73,9 +73,9 @@ namespace NatSuite.Rendering {
         private readonly int bufferSize;
 
         [MonoPInvokeCallback(typeof(ReadbackHandler))]
-        private static void OnReadback (IntPtr context, IntPtr pixelBuffer) {
-            var handle = (GCHandle)context;
-            var handler = handle.Target as Action<IntPtr>;
+        private static unsafe void OnReadback (void* context, void* pixelBuffer) {
+            var handle = (GCHandle)(IntPtr)context;
+            var handler = handle.Target as NativeReadbackDelegate;
             handle.Free();
             handler?.Invoke(pixelBuffer);
         }
@@ -84,18 +84,18 @@ namespace NatSuite.Rendering {
 
         #region --Bridge--
         
-        private delegate void ReadbackHandler (IntPtr context, IntPtr pixelBuffer);
+        private unsafe delegate void ReadbackHandler (void* context, void* pixelBuffer);
 
         #if UNITY_IOS //&& !UNITY_EDITOR
         [DllImport(@"__Internal", EntryPoint = @"NRCreateReadback")]
         private static extern IntPtr Create (int width, int height, bool multithreading);
         [DllImport(@"__Internal", EntryPoint = @"NRRequestReadback")]
-        private static extern void Request (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, IntPtr context);
+        private static extern unsafe void Request (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, void* context);
         [DllImport(@"__Internal", EntryPoint = @"NRDisposeReadback")]
         private static extern void Dispose (IntPtr readback);
         #else
         private static IntPtr Create (int width, int height, bool multithreading) => IntPtr.Zero;
-        private static void Request (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, IntPtr context) { }
+        private static unsafe void Request (IntPtr readback, IntPtr texture, ReadbackHandler completionHandler, void* context) { }
         private static void Dispose (IntPtr readback) { }
         #endif
         #endregion

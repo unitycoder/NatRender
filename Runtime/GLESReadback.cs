@@ -51,8 +51,8 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public unsafe void Request<T> (Texture texture, Action<NativeArray<T>> handler) where T : unmanaged => Request(texture, baseAddress => {
-            var nativeArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(baseAddress.ToPointer(), bufferSize / Marshal.SizeOf<T>(), Allocator.None);
+        public unsafe void Request (Texture texture, ReadbackDelegate handler) => Request(texture, baseAddress => {
+            var nativeArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(baseAddress, bufferSize, Allocator.None);
             handler(nativeArray);
         });
 
@@ -61,9 +61,9 @@ namespace NatSuite.Rendering {
         /// </summary>
         /// <param name="texture">Input texture.</param>
         /// <param name="handler">Readback handler.</param>
-        public void Request (Texture texture, Action<IntPtr> handler) {
+        public unsafe void Request (Texture texture, NativeReadbackDelegate handler) {
             Graphics.Blit(texture, frameBuffer);
-            readback.Call(@"readback", readbackTexture.ToInt32(), ((IntPtr)GCHandle.Alloc(handler, GCHandleType.Normal)).ToInt64());
+            readback.Call(@"readback", readbackTexture.ToInt32(), (long)(IntPtr)GCHandle.Alloc(handler, GCHandleType.Normal));
         }
 
         /// <summary>
@@ -86,11 +86,11 @@ namespace NatSuite.Rendering {
         private readonly int bufferSize;
         
         [Preserve]
-        private void onReadback (long context, AndroidJavaObject pixelBuffer) {
+        private unsafe void onReadback (long context, AndroidJavaObject pixelBuffer) {
             var handle = (GCHandle)(IntPtr)context;
-            var handler = handle.Target as Action<IntPtr>;
+            var handler = handle.Target as NativeReadbackDelegate;
             handle.Free();
-            var baseAddress = (IntPtr)clazz.CallStatic<long>(@"baseAddress", pixelBuffer);
+            var baseAddress = (void*)(IntPtr)clazz.CallStatic<long>(@"baseAddress", pixelBuffer);
             handler?.Invoke(baseAddress);
         }
         #endregion
